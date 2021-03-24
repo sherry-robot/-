@@ -1,0 +1,72 @@
+#!usr/bin/env python3.7
+# -*- coding:utf-8 -*-
+
+__author__ = 'sherry-robot'
+
+import time
+import requests
+from bs4 import BeautifulSoup
+import bs4
+import re
+
+
+def getHtml(url):
+    try:
+        r = requests.get(url)
+        r.raise_for_status()
+        html = r.text  # 获取request访问到的页面
+        soup = BeautifulSoup(html, "html.parser")  # 用beautifulsoup解析HTML，使HTML格式化
+
+        name = soup.find('h2')
+        table = soup.find('div',attrs={'class':'description-box'})
+        time = table.find_all('span')[2]
+
+        # < div class ="profile-text" >
+        #     < p > < div class ="has-content-area" data-url="http://www.abc.org.br/?p=18092" data-title="Abraham Hirsz Zimerman" >
+        #      < p > Fordade de pública.< / p >
+        #      < / div > < / p >
+        #   div>
+        span = soup.find('div',attrs={'class':'has-content-area'})  #个人介绍
+        detail = span.find('p')
+        # < div class ="details" > < strong > Ciências Físicas < / strong > | MEMBRO TITULAR < / div >
+        title = soup.find('div', attrs={'class': 'details'})
+        domain = title.find('strong')
+        # print(name.string)
+        # print(domain.string)
+        # print(time.string)
+        # print(detail.string)
+
+
+        # 个人信息
+        # 将html写入txt文件,  'a'不覆盖循环写入
+        with open('baxi-detail4.txt', 'a') as f:
+            f.write(name.string+"\t")
+            # f.write(domain.string+"\t")
+            # f.write(time.string+"\t")
+            # f.write(url+"\n")
+            f.write("("+name.string+")"+detail.string+"EOF"+"\n")
+
+            #f.write(name.string+"\t"+domain.string+"\t"+time.string+"\t"+url+"\t"+detail.string+"\n")
+        f.close()
+    except:
+        return "faild"
+
+
+
+def main():
+     # url ="http://www.abc.org.br/membro/wuelton-marcelo-monteiro/"
+     # getHtml(url)
+
+    file = open('baxiperson-url.txt', 'r', encoding='utf-8')  # r是读， w是写，  a是追加
+    i = 1
+    for line in file:
+        url = re.sub(r'\n', '', line)
+        getHtml(url)
+        # if i % 50 == 0:
+        print("num to" + str(i))
+        i = i + 1
+    file.close()
+
+
+
+main()
